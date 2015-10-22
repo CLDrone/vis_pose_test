@@ -113,7 +113,7 @@ private:
     /**
      * Callback for target pose from vision system
      */
-    virtual void targetPoseCallback(const geometry_msgs::PoseStampedConstPtr& msg);
+    virtual void targetPoseCallback(const geometry_msgs::PoseArray::ConstPtr& msg);
 
     /**
      * Handle for the main ROS node

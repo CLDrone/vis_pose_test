@@ -137,6 +137,26 @@ void Locator::targetPoseCallback(const geometry_msgs::PoseStampedConstPtr& msg)
 
         // Reset the consecutive frame error count
         position_error_cnt_ = 0;
+    }
+    else
+    {
+        // No targets detected so potential error
+
+        // reset the pose intitialization flag
+        targetPoseInitialized_ = false;
+        if (controller_ != NULL)
+        {
+            // If this is the first error frame detected then notify the controller
+            // Note that you can change this constant it you want to notify the
+            // controller after 'X' number of consecutive frame errors or perhaps
+            // base the conditional on some time duration
+            if (position_error_cnt_ == 1)
+            {
+                controller_->locationError();
+            }
+            position_error_cnt_++;
+        }
+    
 }
 
 void Locator::convertTargetFLUtoENU()
