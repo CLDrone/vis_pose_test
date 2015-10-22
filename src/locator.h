@@ -19,8 +19,6 @@
 #include "tf/transform_datatypes.h"
 #include "tf/LinearMath/Matrix3x3.h"
 
-#include "brain_box_msgs/BBPose.h"
-#include "brain_box_msgs/BBPoseArray.h"
 
 #include "kinematics.h"
 #include "controller.h"

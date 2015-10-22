@@ -30,7 +30,7 @@ void Locator::initROS(ros::NodeHandle *n)
     // vehicle pose from the FCU
     local_pos_sub_ = ros_node_->subscribe("/mavros/local_position/local", 1000, &Locator::localPositionCallback, this);
     // target pose from the vision system
-    target_pos_sub_ = ros_node_->subscribe("/target_pose", 1000, &Locator::targetPoseCallback, this);
+    target_pos_sub_ = ros_node_->subscribe("/aruco_single/pose", 1000, &Locator::targetPoseCallback, this);
 
     // Advertise the position topic to be published to the FCU
     local_pos_pub_ = ros_node_->advertise<geometry_msgs::PoseStamped>("/mavros/vision_pose/pose", 1000);
@@ -78,20 +78,17 @@ void Locator::localPositionCallback(const geometry_msgs::PoseStamped::ConstPtr& 
     }
 }
 
-void Locator::targetPoseCallback(const geometry_msgs::PoseArray::ConstPtr& msgArray)
+void Locator::targetPoseCallback(const geometry_msgs::PoseStampedConstPtr& msg)
 {
-	// Check to see if we have any targets
-    if (msgArray->poses.size() > 0)
-    {
-        // We have a target to process
-    	geometry_msgs::Pose msg = msgArray->poses.at(0);
+	 // We have a target to process
+    	geometry_msgs::PoseStamped targetPose = *msg;
         // copy the message header since we need it when we forward it on to mavros
-        vision_pose_.header = msgArray->header;
+        vision_pose_.header = targetPose.header;
 
         if (!targetPoseInitialized_)
         {
             // Target pose not initialized so initialize it
-            target_current_FLU_.setPose(msg);
+            target_current_FLU_.setPose(targetPose.pose);
             targetPoseInitialized_ = true;
 //            if (vehiclePoseInitialized)
 //            {
@@ -114,7 +111,7 @@ void Locator::targetPoseCallback(const geometry_msgs::PoseArray::ConstPtr& msgAr
 //        	target_current_FLU_.setPose(fPose);
 
         	// No filtering
-        	target_current_FLU_.setPose(msg);
+        	target_current_FLU_.setPose(targetPose.pose);
         }
         ROS_DEBUG("GOT TARGET FLU[F:%0.3f L:%0.3f U:%0.3f, R:%0.3f P:%0.3f Y:%0.3f, ]",
         		target_current_FLU_.position.x,
@@ -159,7 +156,7 @@ void Locator::targetPoseCallback(const geometry_msgs::PoseArray::ConstPtr& msgAr
             }
             position_error_cnt_++;
         }
-    }
+    
 }
 
 void Locator::convertTargetFLUtoENU()
